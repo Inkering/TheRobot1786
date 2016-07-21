@@ -1,0 +1,37 @@
+{
+	"pyfrc": {
+		"robot": {
+			"w": 3,
+			"h": 2,
+			"starting_x": 25,
+			"starting_y": 25,
+			"starting_angle": 180
+		},
+		"analog": {},
+		"dio": {},
+		"pwm": {
+			"0": "left talon",
+			"1": "right talon"
+		},
+		"CAN": {
+			"10": "shooter 2",
+			"11": "shooter 1",
+			"12": "ramp",
+			"13": "arms"
+		},
+		"joysticks": {
+			"0": {
+				"axes": {
+					"Y": "Left Side"
+				},
+				"buttons": {}
+			},
+			"1": {
+				"axes": {
+					"Y": "Right Side"
+				},
+				"buttons": {}
+			}
+		}
+	}
+}
