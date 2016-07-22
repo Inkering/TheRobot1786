@@ -9,7 +9,7 @@ from enum import Enum
 
 TRIGGER = 1
 THUMB = 2
-RAMP_RAISE = 5
+RAMP_RAISE = 4
 RAMP_LOWER = 3
 UNJAM = 11
 
@@ -72,7 +72,7 @@ class MyRobot(wpilib.IterativeRobot):
 
         # Check if we've completed 100 loops (approximately 2 seconds)
         if self.auto_loop_counter < 100:
-            self.drive.drive(-0.5, 0)  # Drive forwards at half speed
+            self.drive.drive(-0.01, 0)  # Drive forwards at one hundreth speed
             self.auto_loop_counter += 1
         else:
             self.drive.drive(0, 0)  # Stop robot
@@ -155,7 +155,6 @@ class MyRobot(wpilib.IterativeRobot):
             left = y * self.saneThrottle(self.driver_stick.getThrottle())
             right = (1 + x) * y * self.saneThrottle(self.driver_stick.getThrottle())
             self.drive.tankDrive(left, right)
-
 
 if __name__ == "__main__":
     wpilib.run(MyRobot)
