@@ -13,7 +13,12 @@ THUMB = 2
 RAMP_RAISE = 4
 RAMP_LOWER = 3
 UNJAM = 11
-ROTATE = 10
+ROTATE_RESET = 10
+ROTATE_0 = 5
+ROTATE_90 = 6
+ROTATE_180 = 7
+ROTATE_NEG90 = 8
+STOPPID = 9
 
 
 class MyRobot(wpilib.IterativeRobot):
@@ -21,7 +26,6 @@ class MyRobot(wpilib.IterativeRobot):
     kI = 0.00
     kD = 0.00
     kF = 0.00
-
     kToleranceDegrees = 2.0
     def robotInit(self):
         """
@@ -40,6 +44,7 @@ class MyRobot(wpilib.IterativeRobot):
         self.ramp = wpilib.CANTalon(12)
         self.shooter = shooter.shooter(self.shooter1, self.shooter2, self.ramp)
 
+        self.drive.setExpiration(0.1)
         self.driver_stick = wpilib.Joystick(0)
         self.operator_stick = wpilib.Joystick(1)
 
@@ -58,7 +63,15 @@ class MyRobot(wpilib.IterativeRobot):
         self.shooterPower = 0
         self.arcade = False
 
-        self.ahrs = AHRS.create_spi(port=wpilib.SPI.Port.kMXP)
+        #navx init/PID init
+
+        self.ahrs = AHRS.create_spi()
+        self.turnController = wpilib.PIDController(self.kP, self.kI, self.kD, self.kF, self.ahrs, output = self)
+        self.turnController.setInputRange(-180.0, 180.0)
+        self.turnController.setOutputRange(-1.0, 1.0)
+        self.turnController.setAbsoluteTolerance(self.kToleranceDegrees)
+        self.turnController.setContinuous(True)
+
 
     def autonomousInit(self):
         """This function is run once each time the robot enters autonomous mode."""
@@ -75,7 +88,6 @@ class MyRobot(wpilib.IterativeRobot):
             self.drive.drive(0, 0)  # Stop robot
 
     def teleopPeriodic(self):
-        print("NavX Gyro", self.ahrs.getYaw(), self.ahrs.getAngle())
         self.table.putBoolean("IMUConnected", self.ahrs.isConnected())
         self.table.putNumber("IMUTotalYaw", self.ahrs.getAngle())
         self.table.putNumber("IMUAccelY", self.ahrs.getWorldLinearAccelY())
@@ -98,6 +110,37 @@ class MyRobot(wpilib.IterativeRobot):
                 self.drive.tankDrive(left, right)
             else:
                 self.updateDrive()
+        #navx rotation/reset bindings
+        tm = wpilib.Timer()
+        tm.start()
+
+        self.drive.setSafetyEnabled(True)
+        if self.driver_stick.getRawButton(STOPPID):
+            self.turnController.disable()
+        if self.driver_stick.getRawButton(ROTATE_RESET):
+           self.ahrs.zeroYaw()
+        self.rotateToAngle = False
+        if self.driver_stick.getRawButton(ROTATE_0):
+            self.turnController.setSetpoint(0.0)
+            self.rotateToAngle = True
+            #turning code
+        elif self.driver_stick.getRawButton(ROTATE_90):
+            self.turnController.setSetpoint(90.0)
+            self.rotateToAngle = True
+        elif self.driver_stick.getRawButton(ROTATE_180):
+            self.turnController.setSetpoint(179.9)
+            self.rotateToAngle = True
+        elif self.driver_stick.getRawButton(ROTATE_NEG90):
+            self.turnController.setSetpoint(-90.0)
+            self.rotateToAngle = True
+        if self.rotateToAngle:
+            self.turnController.enable()
+            self.currentRotationRate = self.rotateToAngleRate
+        else:
+            self.turnController.disable()
+            self.currentRotationRate = self.driver_stick.getTwist()
+        self.drive.arcadeDrive(self.driver_stick.getY(), self.currentRotationRate)
+
         if (not self.ramping and self.operator_stick.getRawButton(RAMP_RAISE)):
             self.shooter.raiseRamp()
             self.ramping = True
@@ -137,14 +180,11 @@ class MyRobot(wpilib.IterativeRobot):
 
         if (not self.pickupRunning and not self.unjamming):
             self.shooter.setPower(self.opThrottle)
-
     def testPeriodic(self):
         """This function is called periodically during test mode."""
         wpilib.LiveWindow.run()
-
     def saneThrottle(self, rawThrottle):
         return ((1.0 - rawThrottle) / 2.0)
-
     def updateDrive(self):
         x = -self.driver_stick.getX()
         y = -self.driver_stick.getY()
@@ -156,6 +196,7 @@ class MyRobot(wpilib.IterativeRobot):
             left = y * self.saneThrottle(self.driver_stick.getThrottle())
             right = (1 + x) * y * self.saneThrottle(self.driver_stick.getThrottle())
             self.drive.tankDrive(left, right)
-
+    def pidWrite(self, output):
+        self.rotateToAngleRate = output
 if __name__ == "__main__":
     wpilib.run(MyRobot)
