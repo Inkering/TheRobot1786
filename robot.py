@@ -5,6 +5,7 @@ import math
 import shooter
 import time
 from enum import Enum
+from robotpy_ext.common_drivers.navx import AHRS
 
 
 TRIGGER = 1
@@ -12,8 +13,16 @@ THUMB = 2
 RAMP_RAISE = 4
 RAMP_LOWER = 3
 UNJAM = 11
+ROTATE = 10
+
 
 class MyRobot(wpilib.IterativeRobot):
+    kP = 0.03
+    kI = 0.00
+    kD = 0.00
+    kF = 0.00
+
+    kToleranceDegrees = 2.0
     def robotInit(self):
         """
 		This function is called upon program startup and
@@ -49,6 +58,8 @@ class MyRobot(wpilib.IterativeRobot):
         self.shooterPower = 0
         self.arcade = False
 
+        self.ahrs = AHRS.create_spi(port=wpilib.SPI.Port.kMXP)
+
     def autonomousInit(self):
         """This function is run once each time the robot enters autonomous mode."""
         self.auto_loop_counter = 0
@@ -64,6 +75,10 @@ class MyRobot(wpilib.IterativeRobot):
             self.drive.drive(0, 0)  # Stop robot
 
     def teleopPeriodic(self):
+        print("NavX Gyro", self.ahrs.getYaw(), self.ahrs.getAngle())
+        self.table.putBoolean("IMUConnected", self.ahrs.isConnected())
+        self.table.putNumber("IMUTotalYaw", self.ahrs.getAngle())
+        self.table.putNumber("IMUAccelY", self.ahrs.getWorldLinearAccelY())
         #limit switch testing
         self.table.putBoolean("RampLimitF", not self.ramp.isFwdLimitSwitchClosed())
         self.table.putBoolean("RampLimitR", not self.ramp.isRevLimitSwitchClosed())
