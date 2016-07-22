@@ -28,6 +28,7 @@ class MyRobot(wpilib.IterativeRobot):
 
         self.driver_stick = wpilib.Joystick(0)
         self.operator_stick = wpilib.Joystick(1)
+        self.game_pad = wpilib.Joystick(2)
 
         self.shooter1.enable()
         self.shooter2.enable()
@@ -122,8 +123,8 @@ class MyRobot(wpilib.IterativeRobot):
         return ((1.0 - rawThrottle) / 2.0)
 
     def updateDrive(self):
-        x = -self.driver_stick.getX()
-        y = -self.driver_stick.getY()
+        x = -self.game_pad.getX()
+        y = -self.game_pad.getY()
         if (x > 0):
             left = y * self.saneThrottle(self.driver_stick.getThrottle())
             right = (1 - x) * y * self.saneThrottle(self.driver_stick.getThrottle())
