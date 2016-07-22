@@ -5,6 +5,7 @@ PICKUP_POWER = 0.75
 LAUNCH_POWER = 1
 SPINUP_TIME = 1.5 #Seconds
 LAUNCH_TIME = 0.5
+RAMP_POWER = 0.3
 
 class ShooterState(Enum):
     READY = 1,
@@ -31,9 +32,9 @@ class shooter():
         self.ramp.set(0)
         self.pickup.set(0)
     def lowerRamp(self):
-        self.ramp.set(-0.5)
+        self.ramp.set(-RAMP_POWER)
     def raiseRamp(self):
-        self.ramp.set(0.5)
+        self.ramp.set(RAMP_POWER)
     def stopRamp(self):
         self.ramp.set(0)
     def shoot(self):

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import wpilib
+from enum import Enum
 import math
 import shooter
 
@@ -59,8 +60,7 @@ class MyRobot(wpilib.IterativeRobot):
 
     def teleopPeriodic(self):
         """This function is called periodically during operator control."""
-        #self.drive.arcadeDrive(self.driver_stick)
-        self.drive.arcadeDrive(-self.driver_stick.getY(), -self.driver_stick.getX() * 0.75)
+        #self.drive.arcadeDrive(-self.driver_stick.getY(), -self.driver_stick.getX() * 0.75)
         if(self.driver_stick.getRawButton(7)):
             self.arcade = True
         if(self.driver_stick.getRawButton(8)):
@@ -102,6 +102,7 @@ class MyRobot(wpilib.IterativeRobot):
             self.pickupRunning = False
 
         if (self.driver_stick.getRawButton(TRIGGER) and not self.inverting):
+            print("re-re-inverting")
             self.left_drive.setInverted(not self.left_drive.getInverted())
             self.right_drive.setInverted(not self.right_drive.getInverted())
             self.inverting = True
