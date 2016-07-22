@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 import wpilib
-from enum import Enum
+from networktables import NetworkTable
 import math
 import shooter
+import time
+from enum import Enum
 
 
 TRIGGER = 1
@@ -17,6 +19,9 @@ class MyRobot(wpilib.IterativeRobot):
 		This function is called upon program startup and
 		should be used for any initialization code.
 		"""
+        #network tables
+        self.table = NetworkTable.getTable("dataTable")
+
         self.left_drive = wpilib.TalonSRX(0)
         self.right_drive = wpilib.TalonSRX(1)
         self.drive = wpilib.RobotDrive(self.left_drive, self.right_drive)
@@ -59,6 +64,10 @@ class MyRobot(wpilib.IterativeRobot):
             self.drive.drive(0, 0)  # Stop robot
 
     def teleopPeriodic(self):
+        #limit switch testing
+        self.table.putBoolean("Ramp Limit F", not self.ramp.isFwdLimitSwitchClosed())
+        self.table.putBoolean("Ramp Limit R", not self.ramp.isRevLimitSwitchClosed())
+
         """This function is called periodically during operator control."""
         #self.drive.arcadeDrive(-self.driver_stick.getY(), -self.driver_stick.getX() * 0.75)
         if(self.driver_stick.getRawButton(7)):
