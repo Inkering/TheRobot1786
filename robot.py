@@ -20,21 +20,7 @@ class MyRobot(wpilib.IterativeRobot):
 		should be used for any initialization code.
 		"""
         #network tables
-        self.table = NetworkTable.getTable("dataTable")
-
-        self.chooser = wpilib.SendableChooser()
-
-        self.autoNameDefault = "1.7 Seconds (Slightly Longer)";
-        self.autoNameShort = "1.5 Seconds (Short, good on the moat)";
-        self.autoNameOne = "1 Seconds";
-        self.autoNameDisable = "Disable Autonomous (set time to 0)";
-
-
-
-        self.chooser.addDefault(self.autoNameDefault, '1')
-        self.chooser.addObject(self.autoNameDisable, '2')
-        self.chooser.addObject(self.autoNameShort, '3')
-        self.chooser.addDefault(self.autoNameOne, '4')
+        self.table = NetworkTable.getTable("SmartDashboard")
 
         self.left_drive = wpilib.TalonSRX(0)
         self.right_drive = wpilib.TalonSRX(1)
@@ -79,8 +65,8 @@ class MyRobot(wpilib.IterativeRobot):
 
     def teleopPeriodic(self):
         #limit switch testing
-        self.table.putBoolean("Ramp Limit F", not self.ramp.isFwdLimitSwitchClosed())
-        self.table.putBoolean("Ramp Limit R", not self.ramp.isRevLimitSwitchClosed())
+        self.table.putBoolean("RampLimitF", not self.ramp.isFwdLimitSwitchClosed())
+        self.table.putBoolean("RampLimitR", not self.ramp.isRevLimitSwitchClosed())
 
         """This function is called periodically during operator control."""
         #self.drive.arcadeDrive(-self.driver_stick.getY(), -self.driver_stick.getX() * 0.75)
