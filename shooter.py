@@ -15,10 +15,10 @@ class ShooterState(Enum):
     RESETTING = 6
 
 class shooter():
-    def __init__(self, talon1, talon2, ramp):
-        self.launcher = talon1
-        self.pickup = talon2
-        self.ramp = ramp
+    def __init__(self, *args):
+        self.launcher = args[0]
+        self.pickup = args[1]
+        self.ramp = args[2]
         self.ready = True
         self.state = ShooterState.READY
         self.shotClock = wpilib.Timer
@@ -32,10 +32,8 @@ class shooter():
         self.pickup.set(0)
     def lowerRamp(self):
         self.ramp.set(-0.5)
-        #if (self.ramp.isFwdLimitSwitchClosed()):
-        #
-        #else:
-        #
+    def raiseRamp(self):
+        self.ramp.set(0.5)
     def stopRamp(self):
         self.ramp.set(0)
     def shoot(self):
