@@ -7,7 +7,7 @@ import shooter
 
 TRIGGER = 1
 THUMB = 2
-RAMP_RAISE = 5
+RAMP_RAISE = 4
 RAMP_LOWER = 3
 UNJAM = 11
 
