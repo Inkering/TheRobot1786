@@ -22,6 +22,20 @@ class MyRobot(wpilib.IterativeRobot):
         #network tables
         self.table = NetworkTable.getTable("dataTable")
 
+        self.chooser = wpilib.SendableChooser()
+
+        self.autoNameDefault = "1.7 Seconds (Slightly Longer)";
+        self.autoNameShort = "1.5 Seconds (Short, good on the moat)";
+        self.autoNameOne = "1 Seconds";
+        self.autoNameDisable = "Disable Autonomous (set time to 0)";
+
+
+
+        self.chooser.addDefault(self.autoNameDefault, '1')
+        self.chooser.addObject(self.autoNameDisable, '2')
+        self.chooser.addObject(self.autoNameShort, '3')
+        self.chooser.addDefault(self.autoNameOne, '4')
+
         self.left_drive = wpilib.TalonSRX(0)
         self.right_drive = wpilib.TalonSRX(1)
         self.drive = wpilib.RobotDrive(self.left_drive, self.right_drive)
