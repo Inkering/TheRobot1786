@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-import wpilib
-from networktables import NetworkTable
 import math
-import shooter
 import time
 from enum import Enum
-from robotpy_ext.common_drivers.navx import AHRS
+import wpilib #Robot code library
+from networktables import NetworkTable #Get networkTables functionality(DS->Roborio->CoProcessor for example)
+import shooter #The class handling shooter
+from robotpy_ext.common_drivers.navx import AHRS #NAVX functionality requires this import
 
 
 TRIGGER = 1
@@ -13,7 +13,11 @@ THUMB = 2
 RAMP_RAISE = 4
 RAMP_LOWER = 3
 UNJAM = 11
-ROTATE = 10
+ROTATE0 = 10
+ROTATE90 = 9
+ROTATE180 = 8
+ROTATENEG90 = 7
+ROTATE_RESET = 6
 
 
 class MyRobot(wpilib.IterativeRobot):
