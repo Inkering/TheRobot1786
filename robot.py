@@ -103,7 +103,7 @@ class MyRobot(wpilib.IterativeRobot):
             self.ramping = True
         elif (not self.ramping and self.operator_stick.getRawButton(RAMP_LOWER)):
             self.shooter.lowerRamp()
-            self.rampign = True
+            self.ramping = True
         elif (self.ramping and not self.operator_stick.getRawButton(RAMP_LOWER) and not self.operator_stick.getRawButton(RAMP_RAISE)):
             self.shooter.stopRamp()
             self.ramping = False
