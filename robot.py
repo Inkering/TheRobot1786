@@ -4,7 +4,6 @@ from enum import Enum
 import math
 import shooter
 
-
 TRIGGER = 1
 THUMB = 2
 RAMP_RAISE = 4
