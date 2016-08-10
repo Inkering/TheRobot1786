@@ -7,7 +7,7 @@ import time
 from enum import Enum
 from robotpy_ext.common_drivers.navx import AHRS
 
-
+#Button bindings
 TRIGGER = 1
 THUMB = 2
 RAMP_RAISE = 4
@@ -22,6 +22,7 @@ STOPPID = 9
 
 
 class MyRobot(wpilib.IterativeRobot):
+    #Tune your PID here! These variables control how "jerky" the rotation buttons are
     kP = 0.03
     kI = 0.00
     kD = 0.00
@@ -35,26 +36,32 @@ class MyRobot(wpilib.IterativeRobot):
         #network tables
         self.table = NetworkTable.getTable("SmartDashboard")
 
+        #Define Drivetrain and drive talons
         self.left_drive = wpilib.TalonSRX(0)
         self.right_drive = wpilib.TalonSRX(1)
         self.drive = wpilib.RobotDrive(self.left_drive, self.right_drive)
+        self.drive.setExpiration(0.1)
 
+        #Define Shooter talons
         self.shooter1 = wpilib.CANTalon(11)
         self.shooter2 = wpilib.CANTalon(10)
         self.ramp = wpilib.CANTalon(12)
         self.shooter = shooter.shooter(self.shooter1, self.shooter2, self.ramp)
 
-        self.drive.setExpiration(0.1)
+        #Define Joysticks and GamePads
         self.driver_stick = wpilib.Joystick(0)
         self.operator_stick = wpilib.Joystick(1)
         self.game_pad = wpilib.Joystick(2)
 
+        #Initialize Shooter instances
         self.shooter1.enable()
         self.shooter2.enable()
 
+        #inverse the drive train
         self.left_drive.setInverted(True)
         self.right_drive.setInverted(True)
 
+        #Hey look some fun booleans!
         self.inverting = False
         self.pickupRunning = False
         self.ramping = False
@@ -65,7 +72,6 @@ class MyRobot(wpilib.IterativeRobot):
         self.arcade = False
 
         #navx init/PID init
-
         self.ahrs = AHRS.create_spi()
         self.turnController = wpilib.PIDController(self.kP, self.kI, self.kD, self.kF, self.ahrs, output = self)
         self.turnController.setInputRange(-180.0, 180.0)
@@ -89,15 +95,16 @@ class MyRobot(wpilib.IterativeRobot):
             self.drive.drive(0, 0)  # Stop robot
 
     def teleopPeriodic(self):
+        #Put data from NAVX on SmartDashboard
         self.table.putBoolean("IMUConnected", self.ahrs.isConnected())
         self.table.putNumber("IMUTotalYaw", self.ahrs.getAngle())
         self.table.putNumber("IMUAccelY", self.ahrs.getWorldLinearAccelY())
-        #limit switch testing
+        #Put limit switch state on SmartDashboard
         self.table.putBoolean("RampLimitF", not self.ramp.isFwdLimitSwitchClosed())
         self.table.putBoolean("RampLimitR", not self.ramp.isRevLimitSwitchClosed())
 
         """This function is called periodically during operator control."""
-        #self.drive.arcadeDrive(-self.driver_stick.getY(), -self.driver_stick.getX() * 0.75)
+        #Switch between arcade and sorta tank drive
         if(self.driver_stick.getRawButton(7)):
             self.arcade = True
         if(self.driver_stick.getRawButton(8)):
@@ -105,17 +112,19 @@ class MyRobot(wpilib.IterativeRobot):
         if (self.arcade):
             self.drive.arcadeDrive(self.driver_stick)
         else:
+            #Hold Button for twist
             if (self.driver_stick.getRawButton(THUMB)):
                 left = self.driver_stick.getTwist()
                 right = -self.driver_stick.getTwist()
                 self.drive.tankDrive(left, right)
             else:
                 self.updateDrive()
-        #navx rotation/reset bindings
+        #Create the dog
         tm = wpilib.Timer()
         tm.start()
-
+        #Make sure that it desires food
         self.drive.setSafetyEnabled(True)
+        #NAVX rotation functionality
         if self.driver_stick.getRawButton(STOPPID):
             self.turnController.disable()
         if self.driver_stick.getRawButton(ROTATE_RESET):
@@ -124,7 +133,6 @@ class MyRobot(wpilib.IterativeRobot):
         if self.driver_stick.getRawButton(ROTATE_0):
             self.turnController.setSetpoint(0.0)
             self.rotateToAngle = True
-            #turning code
         elif self.driver_stick.getRawButton(ROTATE_90):
             self.turnController.setSetpoint(90.0)
             self.rotateToAngle = True
@@ -142,6 +150,7 @@ class MyRobot(wpilib.IterativeRobot):
             self.currentRotationRate = self.driver_stick.getTwist()
         self.drive.arcadeDrive(self.driver_stick.getY(), self.currentRotationRate)
 
+        #Control the ramp
         if (not self.ramping and self.operator_stick.getRawButton(RAMP_RAISE)):
             self.shooter.raiseRamp()
             self.ramping = True
@@ -151,6 +160,7 @@ class MyRobot(wpilib.IterativeRobot):
         elif (self.ramping and not self.operator_stick.getRawButton(RAMP_LOWER) and not self.operator_stick.getRawButton(RAMP_RAISE)):
             self.shooter.stopRamp()
             self.ramping = False
+        #Run all the rollers to eject the ball
         if (not self.unjamming and self.operator_stick.getRawButton(UNJAM)):
             self.unjamming = True
             self.shooter.unJam()
@@ -162,13 +172,11 @@ class MyRobot(wpilib.IterativeRobot):
             self.unjamming = False
         #comment here
         if(self.operator_stick.getRawButton(THUMB) and not self.pickupRunning):
-            #added True Bool to self.shooter.pickUp(True)
             self.shooter.pickUp(True)
             self.pickupRunning = True
         elif (not self.operator_stick.getRawButton(THUMB) and self.pickupRunning):
             self.shooter.pickUp(False)
             self.pickupRunning = False
-
         if (self.driver_stick.getRawButton(TRIGGER) and not self.inverting):
             print("re-re-inverting")
             self.left_drive.setInverted(not self.left_drive.getInverted())
@@ -185,6 +193,7 @@ class MyRobot(wpilib.IterativeRobot):
         """This function is called periodically during test mode."""
         wpilib.LiveWindow.run()
     def saneThrottle(self, rawThrottle):
+        #smooth throttle data
         return ((1.0 - rawThrottle) / 2.0)
     def updateDrive(self):
         x = -self.game_pad.getX()
