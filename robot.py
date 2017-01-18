@@ -2,7 +2,6 @@
 import wpilib
 from enum import Enum
 import math
-import shooter
 
 TRIGGER = 1
 THUMB = 2
@@ -20,27 +19,13 @@ class MyRobot(wpilib.IterativeRobot):
         self.right_drive = wpilib.TalonSRX(1)
         self.drive = wpilib.RobotDrive(self.left_drive, self.right_drive)
 
-        self.shooter1 = wpilib.CANTalon(11)
-        self.shooter2 = wpilib.CANTalon(10)
-        self.ramp = wpilib.CANTalon(12)
-        self.shooter = shooter.shooter(self.shooter1, self.shooter2, self.ramp)
-
         self.driver_stick = wpilib.Joystick(0)
         self.operator_stick = wpilib.Joystick(1)
-
-        self.shooter1.enable()
-        self.shooter2.enable()
 
         self.left_drive.setInverted(True)
         self.right_drive.setInverted(True)
 
         self.inverting = False
-        self.pickupRunning = False
-        self.ramping = False
-        self.shooting = False
-        self.unjamming = False
-        self.arming = False
-        self.shooterPower = 0
         self.arcade = False
 
     def autonomousInit(self):
@@ -73,33 +58,6 @@ class MyRobot(wpilib.IterativeRobot):
                 self.drive.tankDrive(left, right)
             else:
                 self.updateDrive()
-        if (not self.ramping and self.operator_stick.getRawButton(RAMP_RAISE)):
-            self.shooter.raiseRamp()
-            self.ramping = True
-        elif (not self.ramping and self.operator_stick.getRawButton(RAMP_LOWER)):
-            self.shooter.lowerRamp()
-            self.ramping = True
-        elif (self.ramping and not self.operator_stick.getRawButton(RAMP_LOWER) and not self.operator_stick.getRawButton(RAMP_RAISE)):
-            self.shooter.stopRamp()
-            self.ramping = False
-        if (not self.unjamming and self.operator_stick.getRawButton(UNJAM)):
-            self.unjamming = True
-            self.shooter.unJam()
-        elif (not self.unjamming and self.operator_stick.getRawButton(TRIGGER)):
-            self.shooter.shootLow()
-            self.unjamming = True
-        elif (self.unjamming and not self.operator_stick.getRawButton(UNJAM) and not self.operator_stick.getRawButton(TRIGGER)):
-            self.shooter.pickUp(False)
-            self.unjamming = False
-        #comment here
-        if(self.operator_stick.getRawButton(THUMB) and not self.pickupRunning):
-            #added True Bool to self.shooter.pickUp(True)
-            self.shooter.pickUp(True)
-            self.pickupRunning = True
-        elif (not self.operator_stick.getRawButton(THUMB) and self.pickupRunning):
-            self.shooter.pickUp(False)
-            self.pickupRunning = False
-
         if (self.driver_stick.getRawButton(TRIGGER) and not self.inverting):
             print("re-re-inverting")
             self.left_drive.setInverted(not self.left_drive.getInverted())
@@ -109,9 +67,6 @@ class MyRobot(wpilib.IterativeRobot):
             self.inverting = False
 
         self.opThrottle = self.saneThrottle(self.operator_stick.getThrottle())
-
-        if (not self.pickupRunning and not self.unjamming):
-            self.shooter.setPower(self.opThrottle)
 
     def testPeriodic(self):
         """This function is called periodically during test mode."""
